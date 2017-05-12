@@ -13,16 +13,28 @@ function random(min,max) {
   return num;
 }
 
-// define Ball constructor
+// define Shape constructor
 
-function Ball(x, y, velX, velY, color, size) {
+function Shape(x, y, velX, velY, exists) {
   this.x = x;
   this.y = y;
   this.velX = velX;
   this.velY = velY;
+  this.exists = exists;
+}
+
+// define Ball constructor, inheriting Shape constructor
+
+function Ball(x, y, velX, velY, exists, color, size) {
+  Shape.call(this, x, y, velX, velY, exists);
+
   this.color = color;
   this.size = size;
 }
+
+Ball.prototype = Object.create(Shape.prototype);
+Ball.prototype.constructor = Ball;
+
 
 // define ball draw method
 
@@ -72,6 +84,20 @@ Ball.prototype.collisionDetect = function() {
   }
 };
 
+// define EvilCircle constructor, inheriting Shape constructor
+
+function EvilCircle(x, y, velX, velY, exists, color, size) {
+  Shape.call(this, x, y, exists);
+  this.velX = 20;
+  this.velY = 20;
+  this.color = 'white';
+  this.size = 10;
+}
+
+EvilCircle.prototype = Object.create(Shape.prototype);
+EvilCircle.prototype.constructor = EvilCircle;
+
+
 // define array to store balls
 
 var balls = [];
@@ -88,6 +114,7 @@ function loop() {
       random(0,height),
       random(-7,7),
       random(-7,7),
+      true,
       'rgb(' + random(0,255) + ',' + random(0,255) + ',' + random(0,255) +')',
       random(10,20)
     );
