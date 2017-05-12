@@ -1,3 +1,8 @@
+// define variable for ball count paragraph
+
+var para = document.querySelector('p');
+var count = 0;
+
 // setup canvas
 
 var canvas = document.querySelector('canvas');
@@ -86,8 +91,9 @@ Ball.prototype.collisionDetect = function() {
 
 // define EvilCircle constructor, inheriting Shape constructor
 
-function EvilCircle(x, y, velX, velY, exists, color, size) {
+function EvilCircle(x, y, exists) {
   Shape.call(this, x, y, exists);
+
   this.velX = 20;
   this.velY = 20;
   this.color = 'white';
@@ -97,12 +103,88 @@ function EvilCircle(x, y, velX, velY, exists, color, size) {
 EvilCircle.prototype = Object.create(Shape.prototype);
 EvilCircle.prototype.constructor = EvilCircle;
 
+// define EvilCircle draw method
+
+EvilCircle.prototype.draw = function() {
+  ctx.beginPath();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = this.color;
+  ctx.arc(this.x, this.y, this.size, 0, 2 * Math.PI);
+  ctx.stroke();
+};
+
+// define EvilCircle update method
+
+EvilCircle.prototype.checkBounds = function() {
+  if((this.x + this.size) >= width) {
+    this.x -= this.size;
+  }
+
+  if((this.x - this.size) <= 0) {
+    this.x += this.size;
+  }
+
+  if((this.y + this.size) >= height) {
+    this.y -= this.size;
+  }
+
+  if((this.y - this.size) <= 0) {
+    this.y += this.size;
+  }
+};
+
+// define EvilCircle setControls method
+
+EvilCircle.prototype.setControls = function() {
+  var _this = this;
+  window.onkeydown = function(e) {
+      if (e.keyCode === 65) {
+        _this.x -= _this.velX;
+      } else if (e.keyCode === 68) {
+        _this.x += _this.velX;
+      } else if (e.keyCode === 87) {
+        _this.y -= _this.velY;
+      } else if (e.keyCode === 83) {
+        _this.y += _this.velY;
+      }
+    };
+  };
+    // a = 65, d = 68, w = 87, s = 83
+    // _this is used because these variables are private? It is something to do with function scope
+
+
+
+// define EvilCircle collision detection -- NOT SURE IF DELETING BALL CORRECTLY
+
+EvilCircle.prototype.collisionDetect = function() {
+  for(var j = 0; j < balls.length; j++) {
+    if(balls[j].exists) {
+      var dx = this.x - balls[j].x;
+      var dy = this.y - balls[j].y;
+      var distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance < this.size + balls[j].size) {
+        balls[j].exists = false;
+        count--;
+        para.textContent = 'Ball count: ' + count;
+      }
+    }
+  }
+};
+
 
 // define array to store balls
 
 var balls = [];
 
 // define loop that keeps drawing the scene constantly
+
+var evil = new EvilCircle(
+  random(0,width),
+  random(0,height),
+  true
+);
+evil.setControls();
 
 function loop() {
   ctx.fillStyle = 'rgba(0,0,0,0.25)';
@@ -119,13 +201,20 @@ function loop() {
       random(10,20)
     );
     balls.push(ball);
+    count++;
+    para.textContent = 'Ball count: ' + count;
   }
 
   for(var i = 0; i < balls.length; i++) {
-    balls[i].draw();
+    if(balls[i].exists) {
+      balls[i].draw();
     balls[i].update();
     balls[i].collisionDetect();
   }
+}
+evil.draw();
+evil.checkBounds();
+evil.collisionDetect();
 
   requestAnimationFrame(loop);
 }
